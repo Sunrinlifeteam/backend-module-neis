@@ -1,7 +1,8 @@
-import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { CacheModule, Module } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { DatabaseModule } from './database.module';
-import { HelloModule } from './hello/hello.module';
+import { ScheduleModule } from './schedule/schedule.module';
+import redisStore from 'cache-manager-redis-store';
 
 @Module({
   imports: [
@@ -10,7 +11,14 @@ import { HelloModule } from './hello/hello.module';
       isGlobal: true,
       envFilePath: [`.env`],
     }),
-    HelloModule,
+    CacheModule.registerAsync({
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => ({
+        store: redisStore,
+      }),
+      inject: [ConfigService],
+    }),
+    ScheduleModule,
   ],
   controllers: [],
   providers: [],
